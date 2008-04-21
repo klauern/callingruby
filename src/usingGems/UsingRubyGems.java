@@ -32,12 +32,13 @@ public class UsingRubyGems {
         
         
         // See the Gotchas in CallSomeRuby.java
+        /*
         System.setProperty("JRUBY.BASE", ); // the jruby-1.1/ directory
         System.setProperty("JRUBY.HOME", );   // wherever your /bin dir is for JRuby
         System.setProperty("JRUBY.SHELL", );  // /bin/sh or cmd.exe depending
         System.setProperty("JRUBY.LIB", );  // jruby-1.1/lib
         System.setProperty("JRUBY.SCRIPT", ); // either jruby or jruby.bat org.jruby.Main %JRUBY_OPTS% %_RUBY_OPTS%
-        
+        */
         JavaEmbedUtils.terminate(runtime);
     }
 }
