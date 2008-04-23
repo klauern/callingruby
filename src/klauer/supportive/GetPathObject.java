@@ -1,6 +1,5 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * 
  */
 package klauer.supportive;
 
@@ -19,6 +18,7 @@ import java.net.URLDecoder;
  * @see http://forum.java.sun.com/thread.jspa?threadID=328939&messageID=1363760
  * 
  * @author amishslayer
+ * @author klauer
  */
 public class GetPathObject {
 

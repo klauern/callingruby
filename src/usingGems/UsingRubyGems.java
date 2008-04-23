@@ -1,6 +1,5 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * 
  */
 
 package usingGems;
@@ -15,6 +14,7 @@ import org.jruby.javasupport.JavaEmbedUtils;
  * This is an attempt to try to interact with JRuby via Java.  I'm using 
  * Plain 'ol JRuby 1.1, and I'm not entirely sure which has to be done.  THis is
  * pulled directly off of the wiki on how to call Ruby from Java.
+ * 
  * @author klauer
  */
 public class UsingRubyGems {
@@ -30,7 +30,6 @@ public class UsingRubyGems {
         
         evaler.eval(runtime, "puts ");
         
-        
         // See the Gotchas in CallSomeRuby.java
         /*
         System.setProperty("JRUBY.BASE", ); // the jruby-1.1/ directory
@@ -39,6 +38,10 @@ public class UsingRubyGems {
         System.setProperty("JRUBY.LIB", );  // jruby-1.1/lib
         System.setProperty("JRUBY.SCRIPT", ); // either jruby or jruby.bat org.jruby.Main %JRUBY_OPTS% %_RUBY_OPTS%
         */
+        
+        // This should return 'Mac OS X' on OS X, but I'm not sure what it'll do on Windows
+        System.getProperty("os.name");
+        
         JavaEmbedUtils.terminate(runtime);
     }
 }

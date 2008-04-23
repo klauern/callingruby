@@ -1,7 +1,6 @@
 
 // See referring document/blog from Yoko Harada:
-// http://yokolet.blogspot.com/2008/03/tips-for-jruby-engine-how-to-refer.html
-
+// http://yokolet.blogspot.com/2008/03/tips-for-jruby-engine-how-to-refer.htm
 package canna;
 
 import java.util.ArrayList;
@@ -11,6 +10,19 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+/**
+ * From Yoko Harada's blog. 
+ * See http://yokolet.blogspot.com/2008/03/tips-for-jruby-engine-how-to-refer.htm for more information
+ * on how he has constructed this class.  
+ * This class outlines how you use the jruby-engine.jar and Java 6 JSR233 Scripting
+ * API to retrieve a script engine instance and use it to interact with Java.
+ * Perhaps most importantly, this class defines how you can share Java objects with 
+ * JRuby and how you can share JRuby objects back with Java interchangeably.
+ * <br><br>This is especially nice if you have a need to not simply call JRuby
+ * from Java or vice versa and would like to intermix the functionality in your
+ * application.
+ * @author Yoko Harada
+ */
 public class ReferringObjectsExample {
 
     private ReferringObjectsExample() throws ScriptException {
@@ -47,6 +59,7 @@ public class ReferringObjectsExample {
         for (String season : seasons) {
             System.out.println(season);
         }
+        
         // receiving an array object returned from Ruby
         script = "colors = ['red', 'green', 'white', 'blue'];"+
                  "colors.reverse";

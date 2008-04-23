@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package callingruby;
 
 import java.io.BufferedReader;
@@ -22,29 +21,31 @@ import org.jruby.javasupport.JavaEmbedUtils;
  */
 public class CallSomeRuby {
 
-    public static void main(String[] args) throws FileNotFoundException
-    {
+    public CallSomeRuby() throws CloneNotSupportedException, FileNotFoundException {
         Ruby runtime = JavaEmbedUtils.initialize(new ArrayList());
         RubyRuntimeAdapter evaler = JavaEmbedUtils.newRuntimeAdapter();
-        FileReader fr = new FileReader("/Users/klauer/Programming/Java/CallingRuby/src/callingruby/script.rb");
+        FileReader fr = new FileReader("script.rb");
         BufferedReader br = new BufferedReader(fr);
         try {
             while (br.ready()) {
-            evaler.eval(runtime, br.readLine());
+                evaler.eval(runtime, br.readLine());
             }
         } catch (IOException ex) {
             Logger.getLogger(CallSomeRuby.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
         JavaEmbedUtils.terminate(runtime);
-        
+
     }
-    
+
+    public static void main(String[] args) throws FileNotFoundException, CloneNotSupportedException {
+        new CallSomeRuby();
+    }
 }
 
 /*
  * Gotchas
-
+From JRuby Wiki: http://wiki.jruby.org/wiki/Java_Integration#Gotchas
+ 
 If you plan on calling gems from an embedded script, there are a couple of things you need to be aware of:
 
 If you require 'rubygems', you need to make sure you set a few system properties: 
