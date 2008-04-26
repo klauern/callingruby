@@ -2,7 +2,7 @@
  * 
  */
 
-package usingGems;
+package klauer.callingruby.rubygems;
 
 import java.util.ArrayList;
 import java.util.List;

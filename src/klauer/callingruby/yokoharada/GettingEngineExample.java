@@ -1,5 +1,5 @@
 
-package canna;
+package klauer.callingruby.yokoharada;
 
 import java.util.List;
 //import org.jruby.Ruby;

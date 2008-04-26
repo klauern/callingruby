@@ -1,0 +1,13 @@
+Some additional sources for JRuby interaction:
+
+See Charles Nutter's presentation at InfoQ's QCon 2008:
+http://www.infoq.com/presentations/qconsf-nutter-jruby
+
+Cheri               - cheri.rubyforge.org
+Profligacy          - ihate.rubyforge.org/profligacy
+MonkeyBars          - monkeybars.rubyforge.org
+ActiveHibernate     - code.google.com/p/activehibernate
+AntBuilder          - rubyforge.org/projects/jruby-extras
+Rake                - rake.rubyforge.org
+Buildr              - buildr.rubyforge.org
+RSpec               - rspec.rubyforge.org

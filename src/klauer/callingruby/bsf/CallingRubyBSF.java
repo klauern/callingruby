@@ -2,7 +2,7 @@
  * 
  */
 
-package bsfRuby;
+package klauer.callingruby.bsf;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
