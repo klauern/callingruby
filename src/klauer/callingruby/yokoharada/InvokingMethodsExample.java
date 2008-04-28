@@ -21,15 +21,30 @@ import javax.script.ScriptException;
  */
 public class InvokingMethodsExample {
 
+    /**
+     * Sets up the set of examples by creating the JRuby scripting instance.
+     * @throws javax.script.ScriptException
+     * @throws java.lang.NoSuchMethodException
+     */
     private InvokingMethodsExample()
             throws ScriptException, NoSuchMethodException {
         ScriptEngineManager manager = new ScriptEngineManager();
         ScriptEngine engine = manager.getEngineByName("jruby");
-        invokeSimpleMethod(engine);
+        //invokeSimpleMethod(engine);
         invokeMethodWithMultipleInstances(engine);
-        invokeMethodWithGlobalVariables(engine);
+        //invokeMethodWithGlobalVariables(engine);
     }
 
+    /**
+     * This is the simplest example for calling a method inside a class or module
+     * In this example, we have a module SomeModule defined that has a method,
+     * say().  To call this method, we first create an Invocable type, returning
+     * an instance of the module itself.  From here we can call the method inside
+     * the Invocable module.
+     * @param engine
+     * @throws javax.script.ScriptException
+     * @throws java.lang.NoSuchMethodException
+     */
     private void invokeSimpleMethod(ScriptEngine engine)
             throws ScriptException, NoSuchMethodException {
         String script =
@@ -42,6 +57,9 @@ public class InvokingMethodsExample {
                 "include SomeModule;" +
                 "end\n" +
                 "SomeClass.new";
+        // We must eval the script prior to having access to it.  This must be
+        // done for all class- and module-level access.  It may be a performance
+        // penalty, but I think that's why JRuby has a compiler now--jrubyc.
         Object object = engine.eval(script);
         Invocable invocable = (Invocable) engine;
         invocable.invokeMethod(object, "say");
@@ -52,10 +70,23 @@ public class InvokingMethodsExample {
                 "end\n" +
                 "end\n" +
                 "AnotherClass.new";
+        // We do this again to show another example (reusing the Object).
         object = engine.eval(script);
         invocable.invokeMethod(object, "say_it_again");
     }
 
+    /**
+     * If we wanted to get more than one instance from a Ruby return method, we can take
+     * advantage of Ruby returning to us a java.util.List object that we can parse
+     * for the instances we want to use.  In this case, we are going to get back
+     * two instances which we will execute methods on.
+     * 
+     * In this example, we will get back two items from Ruby's script return,
+     * and with each of these we will call the Ruby script comment() and others().
+     * @param engine
+     * @throws javax.script.ScriptException
+     * @throws java.lang.NoSuchMethodException
+     */
     private void invokeMethodWithMultipleInstances(ScriptEngine engine)
             throws ScriptException, NoSuchMethodException {
         String script =
@@ -87,6 +118,22 @@ public class InvokingMethodsExample {
         }
     }
 
+    /**
+     * As shown in invodeMethodWithMultipleInstances(), we can get back multiple
+     * instances of a script as a java.lang.Object, casting it to a List.  This allows
+     * us access to each of the returned instances.  An alternative method to doing this
+     * is to assign these values to the global variable namespace.  In Ruby, this is
+     * done by prepending the variables with '$'.  From this, we can call the script
+     * engine to get back to us the visible global variables.
+     * 
+     * This example does nearly the same as 
+     * {@link InvokingMethodsExample#invokeMethodWithMultipleInstances(javax.script.ScriptEngine) }, 
+     * except we assign the values to a global namespace instead.  The flexibility
+     * for us comes from Java invoking the engine to get at each instance.
+     * @param engine
+     * @throws javax.script.ScriptException
+     * @throws java.lang.NoSuchMethodException
+     */
     private void invokeMethodWithGlobalVariables(ScriptEngine engine)
             throws ScriptException, NoSuchMethodException {
         String script =
