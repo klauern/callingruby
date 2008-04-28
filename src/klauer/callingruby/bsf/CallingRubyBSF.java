@@ -1,5 +1,5 @@
 /**
- * 
+ * Calling Ruby from java using the Apache Bean Scripting Framework.
  */
 
 package klauer.callingruby.bsf;

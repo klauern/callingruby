@@ -1,0 +1,411 @@
+<?xml version="1.0"?>
+
+<!--
+
+   Copyright 2004,2004 The Apache Software Foundation.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+
+
+ ===================================================================
+
+   Master Build file for BSF
+
+Notes:
+
+   This is the build file for use with the Jakarta Ant build tool.
+
+Optional additions:
+
+    Rhino       -> http://www.mozilla.org/rhino/
+    NetRexx     -> http://www2.hursley.ibm.com/netrexx/
+    Jython      -> http://www.jython.org/
+    Jacl        -> http://www.scriptics.com/java/
+    Xalan       -> http://xml.apache.org/xalan/
+    ASF (Win32) -> http://msdn.microsoft.com/scripting/ (currently unsupported)
+    PerlScript  -> http://www.activestate.com/ (currently unsupported)
+    BeanShell   -> http://www.beanshell.org/ (3rd party BSF engine)
+    JRuby       -> http://www.jruby.org/ (3rd party BSF engine)
+    JudoScript  -> http://www.judoscript.com/ (3rd party BSF engine)
+
+Build Instructions:
+
+   To build, run
+
+     java org.apache.tools.ant.Main <target>
+
+   on the directory where this file is located with the target you want.
+
+Most useful targets:
+
+ - compile    -> creates the "bsf.jar" package in "./build/lib" (default target)
+ - samples    -> creates/compiles the samples into "./build/samples"
+ - javadocs   -> creates the javadocs in "./build/javadocs"
+ - build-site -> creates the website in "./docs"
+ - bindist    -> creates the complete binary distribution in "./dist/"
+ - srcdist    -> creates the complete src distribution in "./dist/"
+ - dist       -> creates both the binary and the src distributions in "./dist/"
+ - all        -> creates the binary and src distributions, and builds the site
+ - clean      -> removes all the generated files and directories
+
+Authors:
+  Sam Ruby <rubys@us.ibm.com>
+  Matthew J. Duftler <duftler@us.ibm.com>
+  Victor J. Orlikowski <victor.j.orlikowski@alumni.duke.edu>
+  Charles Murcko <cmurcko@us.ibm.com>
+  Olivier Gruber <ogruber@us.ibm.com>
+
+Copyright:
+  Copyright (c) Apache Software Foundation 2004-2006. All Rights Reserved
+
+==================================================================== -->
+
+<project name="BSF Build" default="compile" basedir=".">
+
+	<import file="build-properties.xml" />
+
+	<!-- =================================================================== -->
+	<!-- Source files to be compiled                                         -->
+	<!-- =================================================================== -->
+	<patternset id="java.source.files">
+		<!-- Optionally includes engines based on dependencies being present -->
+		<include name="**/bsf/*.java" />
+		<include name="**/util/**/*.java" />
+		<include name="**/jacl/**" if="jacl.present" />
+		<include name="**/javascript/**" if="rhino.present" />
+		<include name="**/jython/**" if="jython.present" />
+		<include name="**/netrexx/**" if="netrexx.present" />
+		<include name="**/xslt/**" if="xalan.present" />
+		<include name="**/test/**" if="junit.present" />
+	</patternset>
+
+	<path id="compile.classpath">
+		<fileset dir="lib">
+			<include name="*.jar" />
+		</fileset>
+		<pathelement location="${build.dest}" />
+	</path>
+
+	<path id="test.classpath">
+		<path refid="compile.classpath"/>
+		<pathelement location="${build.tests}"/>
+	</path>
+
+	<target name="init" depends="clean">
+		<tstamp />
+
+
+		<!-- ================================================================= -->
+		<!-- Sets version and time/date specific values                        -->
+		<!-- ================================================================= -->
+		<filter token="RELEASE_DATE_TIME" value="${TODAY} / ${TSTAMP}" />
+		<filter token="VERSION" value="${project.version}" />
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Prepares the build directory                                        -->
+	<!-- =================================================================== -->
+	<target name="prepare" depends="init">
+		<mkdir dir="${build.dir}" />
+
+		<!-- ================================================================= -->
+		<!-- Determines what optional components are available                 -->
+		<!-- ================================================================= -->
+		<available property="jacl.present" classname="tcl.lang.JACL" />
+
+		<available property="jython.present" classname="org.python.util.jython" />
+
+		<available property="netrexx.present" classname="netrexx.lang.Rexx" />
+
+		<available property="rhino.present" classname="org.mozilla.javascript.Scriptable" />
+
+		<available property="xalan.present" classname="org.apache.xalan.xslt.EnvironmentCheck" />
+
+		<available property="junit.present" classname="junit.framework.TestCase" />
+
+		<uptodate property="javac.notRequired" targetfile="${build.lib}/${project.name}.jar">
+			<srcfiles dir="${src.dir}">
+				<patternset refid="javac.source.files" />
+			</srcfiles>
+		</uptodate>
+
+		<uptodate property="javadoc.required" targetfile="${build.lib}/${project.name}.jar">
+			<srcfiles dir="${build.dir}" includes="**/*.html" />
+		</uptodate>
+
+		<antcall target="checkDependencies" />
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Prepares the site build process                                     -->
+	<!-- =================================================================== -->
+	<target name="prepare-site" depends="init">
+		<path id="anakia.classpath">
+			<fileset dir="${basedir}/lib">
+				<include name="*.jar" />
+			</fileset>
+		</path>
+
+		<available property="AnakiaTask.present" classname="org.apache.velocity.anakia.AnakiaTask">
+			<classpath refid="anakia.classpath" />
+		</available>
+
+		<antcall target="checkAnakiaTask" />
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Warn the user about items not present, for whatever purpose.        -->
+	<!-- =================================================================== -->
+	<target name="checkJacl" unless="jacl.present">
+		<echo message="Warning: Jacl dependencies were not resolved." />
+	</target>
+	<target name="checkJython" unless="jython.present">
+		<echo message="Warning: Jython dependencies were not resolved." />
+	</target>
+	<target name="checkNetRexx" unless="netrexx.present">
+		<echo message="Warning: NetRexx dependencies were not resolved." />
+	</target>
+	<target name="checkRhino" unless="rhino.present">
+		<echo message="Warning: Rhino dependencies were not resolved." />
+	</target>
+	<target name="checkXalan" unless="xalan.present">
+		<echo message="Warning: Xalan dependencies were not resolved." />
+	</target>
+	<target name="checkAnakiaTask" unless="AnakiaTask.present">
+		<echo>
+          Warning: AnakiaTask not present!
+          Please ensure that velocity.jar is in your classpath.
+
+          Documentation will not be generated.
+    </echo>
+	</target>
+	<target name="checkJUnit" unless="junit.present">
+		<echo message="Warning: JUnit dependencies were not resolved." />
+	</target>
+
+	<target name="checkDependencies" unless="javac.notRequired">
+		<antcall target="checkJacl" />
+		<antcall target="checkJython" />
+		<antcall target="checkNetRexx" />
+		<antcall target="checkRhino" />
+
+		<antcall target="checkXalan" />
+		<antcall target="checkJUnit" />
+	</target>
+
+
+
+
+
+
+	<!-- =================================================================== -->
+	<!-- Compiles the source directory                                       -->
+	<!-- =================================================================== -->
+	<target name="compile" description="Compiles the BSF *.java files." depends="prepare">
+		<mkdir dir="${build.dest}"/>
+		<javac srcdir="${src.dir}" destdir="${build.dest}" debug="${project.debug}" deprecation="${project.deprecation}" source="${source.level}">
+			<classpath>
+				<fileset dir="lib">
+					<include name="*.jar"/>
+				</fileset>
+			</classpath>
+			<patternset refid="java.source.files"/>
+		</javac>
+	</target>
+
+	<!-- ================================================================= -->
+	<!-- Produces the jar file                                             -->
+	<!-- ================================================================= -->
+	<target name="jar" depends="compile" description="Produces the jar file and copies to ${build.lib}">
+		<mkdir dir="${build.lib}" />
+		<copy todir="${build.dest}">
+			<fileset dir="${src.dir}">
+				<include name="**/*.properties" />
+			</fileset>
+		</copy>
+
+		<mkdir dir="${build.dest}/META-INF" />
+		<copy todir="${build.dest}/META-INF">
+			<fileset dir="${basedir}">
+				<include name="**/LICENSE.txt" />
+				<include name="**/NOTICE.txt" />
+			</fileset>
+		</copy>
+
+		<jar jarfile="${build.lib}/${project.name}.jar" basedir="${build.dest}" />
+		<uptodate property="javadoc.required" targetfile="${build.lib}/${project.name}.jar">
+			<srcfiles dir="${build.dir}" includes="**/*.html" />
+		</uptodate>
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Compiles the samples                                                -->
+	<!-- =================================================================== -->
+	<target name="samples" description="Compiles the samples." depends="jar">
+		<copy todir="${build.samples}">
+			<fileset dir="${samples.dir}" />
+		</copy>
+		<javac srcdir="${build.samples.calc}" destdir="${build.samples.calc}" classpath="${build.lib}/${project.name}.jar" debug="${project.debug}" deprecation="${project.deprecation}" source="${source.level}" />
+		<javac srcdir="${build.samples.scriptedui}" destdir="${build.samples.scriptedui}" classpath="${build.lib}/${project.name}.jar" debug="${project.debug}" deprecation="${project.deprecation}" source="${source.level}" />
+		<javac srcdir="${build.samples.xsl}" destdir="${build.samples.xsl}" classpath="${build.lib}/${project.name}.jar" debug="${project.debug}" deprecation="${project.deprecation}" source="${source.level}" />
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Creates the API documentation                                       -->
+	<!-- =================================================================== -->
+	<target name="javadocs" description="Generates the API documentation." depends="compile">
+		<mkdir dir="${build.javadocs}" />
+		<!-- FIXME: Excluding some packages temporarily -->
+		<javadoc packagenames="${packages}" failonerror="true" excludepackagenames="org.apache.bsf.engines.java, org.apache.bsf.engines.javaclass" destdir="${build.javadocs}" author="true" version="false" use="true" windowtitle="${project.fullName} API" doctitle="${project.fullName}" source="${source.level}">
+			<classpath refid="compile.classpath" />
+			<fileset dir="${src.dir}">
+				<patternset refid="java.source.files"></patternset>
+			</fileset>
+		</javadoc>
+
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Creates the website                                                 -->
+	<!-- =================================================================== -->
+	<target name="build-site" if="AnakiaTask.present" description="Generates the website." depends="prepare-site">
+		<taskdef name="anakia" classname="org.apache.velocity.anakia.AnakiaTask">
+			<classpath refid="anakia.classpath" />
+		</taskdef>
+
+		<anakia basedir="${site.src}" destdir="${site.dest}/" extension=".html" style="./site.vsl" projectFile="${site.projectFile}" excludes="**/stylesheets/** faq.xml" includes="**/*.xml" lastModifiedCheck="true" templatePath="${templ.path}" velocityPropertiesFile="${velocity.props}"/>
+
+
+		<anakia basedir="${site.src}" destdir="${site.dest}/" extension=".html" style="./faq.vsl" projectFile="${site.projectFile}" includes="faq.xml" lastModifiedCheck="true" templatePath="${templ.path}" velocityPropertiesFile="${velocity.props}"/>
+
+
+		<copy todir="${site.dest}/images" filtering="no">
+			<fileset dir="${site.src}/images">
+				<include name="**/*.gif" />
+				<include name="**/*.jpeg" />
+				<include name="**/*.jpg" />
+			</fileset>
+		</copy>
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Creates the binary distribution                                     -->
+	<!-- =================================================================== -->
+	<target name="bindist" description="Creates the binary distribution(s)." depends="javadocs, samples">
+
+		<copy todir="${dist.dir.root}/docs/api">
+			<fileset dir="${build.javadocs}" />
+		</copy>
+		<copy todir="${dist.dir.root}/lib">
+			<fileset dir="${build.lib}" />
+		</copy>
+		<copy todir="${dist.dir.root}/samples">
+			<fileset dir="${build.samples}" />
+		</copy>
+
+		<copy file="AUTHORS.txt" tofile="${dist.dir.root}/AUTHORS.txt" />
+		<copy file="CHANGES.txt" tofile="${dist.dir.root}/CHANGES.txt" />
+		<copy file="INSTALL.txt" tofile="${dist.dir.root}/INSTALL.txt" />
+		<copy file="LICENSE.txt" tofile="${dist.dir.root}/LICENSE.txt" />
+		<copy file="NOTICE.txt" tofile="${dist.dir.root}/NOTICE.txt" />
+		<copy file="README.txt" tofile="${dist.dir.root}/README.txt" />
+		<copy file="RELEASE-NOTE.txt" tofile="${dist.dir.root}/RELEASE-NOTE.txt" />
+		<copy file="TODO.txt" tofile="${dist.dir.root}/TODO.txt" />
+
+		<!-- ================================================================= -->
+		<!-- Produces the tar/gzip file                                        -->
+		<!-- ================================================================= -->
+		<tar tarfile="${dist.bin.file}.tar" basedir="${dist.dir}" excludes="*.zip,*.tar,*.gz" />
+		<gzip src="${dist.bin.file}.tar" zipfile="${dist.bin.file}.tar.gz" />
+		<delete file="${dist.bin.file}.tar" />
+
+		<!-- ================================================================= -->
+		<!-- Produces the zip file                                             -->
+		<!-- ================================================================= -->
+		<zip zipfile="${dist.bin.file}.zip" basedir="${dist.dir}" excludes="*.zip,*.tar,*.gz" />
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Creates the source distribution                                     -->
+	<!-- =================================================================== -->
+	<target name="srcdist" description="Creates the source distribution(s)." depends="init">
+
+		<copy todir="${dist.dir.root}/src">
+			<fileset dir="${src.dir}" />
+		</copy>
+
+		<copy file="AUTHORS.txt" tofile="${dist.dir.root}/AUTHORS.txt" />
+		<copy file="BUILDING.txt" tofile="${dist.dir.root}/BUILDING.txt" />
+		<copy file="CHANGES.txt" tofile="${dist.dir.root}/CHANGES.txt" />
+		<copy file="INSTALL.txt" tofile="${dist.dir.root}/INSTALL.txt" />
+		<copy file="LICENSE.txt" tofile="${dist.dir.root}/LICENSE.txt" />
+		<copy file="NOTICE.txt" tofile="${dist.dir.root}/NOTICE.txt" />
+		<copy file="README.txt" tofile="${dist.dir.root}/README.txt" />
+		<copy file="RELEASE-NOTE.txt" tofile="${dist.dir.root}/RELEASE-NOTE.txt" />
+		<copy file="TODO.txt" tofile="${dist.dir.root}/TODO.txt" />
+		<copy file="${build.file}" tofile="${dist.dir.root}/${build.file}" />
+
+		<!-- ================================================================= -->
+		<!-- Produces the tar/gzip file                                        -->
+		<!-- ================================================================= -->
+		<tar tarfile="${dist.src.file}.tar" basedir="${dist.dir}" excludes="*.zip,*.tar,*.gz" />
+		<gzip src="${dist.src.file}.tar" zipfile="${dist.src.file}.tar.gz" />
+		<delete file="${dist.src.file}.tar" />
+
+		<!-- ================================================================= -->
+		<!-- Produces the zip file                                             -->
+		<!-- ================================================================= -->
+		<zip zipfile="${dist.src.file}.zip" basedir="${dist.dir}/" excludes="*.zip,*.tar,*.gz" />
+	</target>
+
+
+	<!-- =================================================================== -->
+	<!-- Compile unit tests                                                  -->
+	<!-- =================================================================== -->
+	<target name="compile-test" if="junit.present" depends="compile">
+		<mkdir dir="${build.tests}" />
+		<javac srcdir="${tests.dir}" destdir="${build.tests}" classpath="${build.dest}" source="${source.level}" />
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Performs unit tests                                                 -->
+	<!-- =================================================================== -->
+	<target name="test" if="junit.present" description="Performs unit tests on BSF." depends="compile-test">
+		<copy todir="${build.dest}" overwrite="true">
+			<fileset dir="${src.dir}">
+				<include name="**/*.properties" />
+			</fileset>
+		</copy>
+		<junit>
+			<classpath refid="test.classpath" />
+			<formatter type="brief" usefile="false" />
+			<test name="org.apache.bsf.BSFTest" />
+		</junit>
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Creates both distributions                                          -->
+	<!-- =================================================================== -->
+	<target name="dist" description="Executes both bindist and srcdist." depends="bindist, srcdist" />
+
+	<!-- =================================================================== -->
+	<!-- Cleans everything                                                   -->
+	<!-- =================================================================== -->
+	<target name="clean" description="Removes build and dist directories.">
+		<delete dir="${build.dir}" />
+		<delete dir="${dist.dir}" />
+	</target>
+
+	<target name="all" depends="build-site, dist" />
+</project>

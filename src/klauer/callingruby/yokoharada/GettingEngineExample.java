@@ -2,8 +2,6 @@
 package klauer.callingruby.yokoharada;
 
 import java.util.List;
-//import org.jruby.Ruby;
-//import org.jruby.*;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;

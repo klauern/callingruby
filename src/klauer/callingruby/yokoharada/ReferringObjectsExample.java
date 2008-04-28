@@ -1,4 +1,3 @@
-
 // See referring document/blog from Yoko Harada:
 // http://yokolet.blogspot.com/2008/03/tips-for-jruby-engine-how-to-refer.htm
 package klauer.callingruby.yokoharada;
