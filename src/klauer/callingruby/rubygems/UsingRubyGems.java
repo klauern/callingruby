@@ -28,7 +28,17 @@ public class UsingRubyGems {
         runtime = JavaEmbedUtils.initialize(new ArrayList());
         evaler = JavaEmbedUtils.newRuntimeAdapter();
         
-        evaler.eval(runtime, "puts ");
+        String gem_script = "require 'rubygems'\n" +
+                "require 'highline'";
+        
+        // These are Defaults on my system running under OS X
+        System.setProperty("JRUBY.BASE", "/Users/klauer/Programming/Ruby/jruby");   
+        System.setProperty("JRUBY.HOME", "/Users/klauer/Programming/Ruby/jruby/bin");
+        System.setProperty("JRUBY.SHELL", "/bin/sh");
+        System.setProperty("JRUBY.LIB", "/Users/klauer/Programming/Ruby/jruby/lib");
+        System.setProperty("JRUBY.SCRIPT", "jruby");
+        
+        evaler.eval(runtime, gem_script);
         
         // See the Gotchas in CallSomeRuby.java
         /*
